@@ -23,19 +23,31 @@ export default function Home() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+
     const userMessage: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input }),
-    });
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: input }],
+        }),
+      });
 
-    const data = await res.json();
-    const botMessage: Message = { sender: "bot", text: data.message };
-    setMessages((prev) => [...prev, botMessage]);
+      const data = await res.json();
+      const botMessage: Message = { sender: "bot", text: data.result };
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (err) {
+      console.error("API呼び出し失敗:", err);
+      const errorMessage: Message = {
+        sender: "bot",
+        text: "エラーが発生しました。もう一度お試しください。",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    }
   };
 
   return (
