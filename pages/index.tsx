@@ -1,52 +1,39 @@
 import { useState, useRef, useEffect } from "react";
 import Head from "next/head";
 
-// メッセージの型定義
 interface Message {
   sender: "user" | "bot";
   text: string;
 }
 
 export default function Home() {
-  // メッセージの状態管理
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "Dr. Tanakaです。ご質問がございましたら、お気軽にお聞きください。",
+      text: "こんにちは！Dr. Tanakaです。医学に関するご質問がございましたら、お気軽にお聞きください。",
     },
   ]);
 
-  // 入力フィールドの状態管理
   const [input, setInput] = useState("");
-
-  // ローディング状態の管理（APIからの応答待ち）
   const [isLoading, setIsLoading] = useState(false);
-
-  // 入力フィールドのref
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // メッセージリストの最下部へのスクロール用ref
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
-  // チャット履歴をクリアする関数
   const clearChatHistory = () => {
     setMessages([
       {
         sender: "bot",
-        text: "こんにちは！Dr. Tanakaです。医学に関するご質問がございましたら、お気軽にでお聞きください。",
+        text: "こんにちは！Dr. Tanakaです。医学に関するご質問がございましたら、お気軽にお聞きください。",
       },
     ]);
   };
 
-  // 初回レンダリング時に入力欄にフォーカス
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // メッセージが更新された時、またはローディング状態が変わった時に自動スクロール
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
-    // ローディングが終わったら入力欄にフォーカスを戻す
     if (!isLoading) {
       setTimeout(() => {
         inputRef.current?.focus();
@@ -54,19 +41,15 @@ export default function Home() {
     }
   }, [messages, isLoading]);
 
-  // メッセージ送信ハンドラ
   const handleSend = async () => {
-    // 入力が空、またはローディング中の場合は何もしない
     if (!input.trim() || isLoading) return;
 
-    // ユーザーメッセージをメッセージリストに追加
     const userMessage: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
-    setInput(""); // 入力フィールドをクリア
-    setIsLoading(true); // ローディング開始
+    setInput("");
+    setIsLoading(true);
 
     try {
-      // APIにメッセージを送信
       const res = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,27 +58,27 @@ export default function Home() {
         }),
       });
 
-      // APIからの応答をパース
       const data = await res.json();
-      // ボットの応答をメッセージリストに追加
       const botMessage: Message = { sender: "bot", text: data.result };
       setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
       console.error("API呼び出し失敗:", err);
-      // エラーメッセージをボットとして表示
       const errorMessage: Message = {
         sender: "bot",
         text: "申し訳ございません。少々お待ちください。もう一度お試しいただけますでしょうか。",
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false); // ローディング終了
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      {/* 白い背景 */}
+    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+      <Head>
+        <title>Dr. Tanaka - Medical Consultation</title>
+      </Head>
+
       <div
         style={{
           position: "fixed",
@@ -108,7 +91,6 @@ export default function Home() {
         }}
       />
 
-      {/* メインコンテナ */}
       <div
         style={{
           position: "absolute",
@@ -119,15 +101,10 @@ export default function Home() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          margin: 0,
-          padding: 0,
+          padding: "20px",
+          boxSizing: "border-box",
         }}
       >
-        <Head>
-          <title>Dr. Tanaka - Medical Consultation</title>
-        </Head>
-
-        {/* チャットコンテナ */}
         <div
           style={{
             display: "flex",
@@ -136,7 +113,8 @@ export default function Home() {
             alignItems: "center",
             height: "90%",
             maxHeight: "900px",
-            width: "750px",
+            width: "100%",
+            maxWidth: "750px",
             padding: "32px",
             paddingTop: "80px",
             boxSizing: "border-box",
@@ -149,7 +127,6 @@ export default function Home() {
             position: "relative",
           }}
         >
-          {/* 会社ロゴ + タイトル - チャットコンテナ内の上部 */}
           <div
             style={{
               position: "absolute",
@@ -182,7 +159,6 @@ export default function Home() {
             >
               Dr. TANAKA
             </div>
-            {/* クリアボタン */}
             <button
               onClick={clearChatHistory}
               style={{
@@ -200,36 +176,11 @@ export default function Home() {
                 alignItems: "center",
                 gap: "4px",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-                e.currentTarget.style.color = "#dc2626";
-                e.currentTarget.style.borderColor = "#fca5a5";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.8)";
-                e.currentTarget.style.color = "#6b7280";
-                e.currentTarget.style.borderColor = "#d1d5db";
-              }}
             >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
               クリア
             </button>
           </div>
 
-          {/* チャットメッセージ表示エリア */}
           <div
             style={{
               flex: 1,
@@ -251,12 +202,10 @@ export default function Home() {
                   alignItems: "flex-start",
                   marginBottom: "32px",
                   width: "100%",
-                  justifyContent: msg.sender === "user" ? "flex-start" : "flex-start",
+                  justifyContent: "flex-start",
                   flexDirection: msg.sender === "user" ? "row-reverse" : "row",
-                  animation: "slideIn 0.4s ease-out",
                 }}
               >
-                {/* アバター */}
                 <div
                   style={{
                     display: "flex",
@@ -299,7 +248,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* メッセージテキスト */}
                 <div
                   style={{
                     maxWidth: "75%",
@@ -308,14 +256,13 @@ export default function Home() {
                     fontSize: "16px",
                     lineHeight: "1.6",
                     borderRadius: "20px",
-                    position: "relative",
                     background: msg.sender === "user"
                       ? "linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%)"
                       : "rgba(248, 250, 252, 0.95)",
                     color: msg.sender === "user" ? "#ffffff" : "#1e293b",
                     boxShadow: msg.sender === "user"
-                      ? "0 12px 32px rgba(16, 185, 129, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)"
-                      : "0 12px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(203, 213, 225, 0.5)",
+                      ? "0 12px 32px rgba(16, 185, 129, 0.3)"
+                      : "0 12px 32px rgba(0, 0, 0, 0.1)",
                     border: msg.sender === "user"
                       ? "1px solid rgba(255, 255, 255, 0.2)"
                       : "1px solid rgba(203, 213, 225, 0.3)",
@@ -327,7 +274,6 @@ export default function Home() {
               </div>
             ))}
 
-            {/* ローディング中の表示 */}
             {isLoading && (
               <div
                 style={{
@@ -383,53 +329,27 @@ export default function Home() {
                   style={{
                     maxWidth: "75%",
                     padding: "20px 24px",
-                    wordWrap: "break-word",
                     fontSize: "16px",
                     lineHeight: "1.6",
                     borderRadius: "20px",
-                    position: "relative",
                     background: "rgba(248, 250, 252, 0.95)",
                     color: "#1e293b",
-                    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(203, 213, 225, 0.5)",
+                    boxShadow: "0 12px 32px rgba(0, 0, 0, 0.1)",
                     border: "1px solid rgba(203, 213, 225, 0.3)",
                     backdropFilter: "blur(12px)",
                   }}
                 >
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                  }}>
-                    <div style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: "#6366f1",
-                      animation: "pulse1 1.4s infinite ease-in-out",
-                    }}></div>
-                    <div style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: "#6366f1",
-                      animation: "pulse2 1.4s infinite ease-in-out",
-                    }}></div>
-                    <div style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      background: "#6366f1",
-                      animation: "pulse3 1.4s infinite ease-in-out",
-                    }}></div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#6366f1" }}></div>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#6366f1" }}></div>
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#6366f1" }}></div>
                   </div>
                 </div>
               </div>
             )}
-            {/* 自動スクロールのターゲット */}
             <div ref={endOfMessagesRef} />
           </div>
 
-          {/* 入力エリア */}
           <div
             style={{
               display: "flex",
@@ -496,7 +416,6 @@ export default function Home() {
                   border: "2px solid rgba(255, 255, 255, 0.3)",
                   borderTop: "2px solid #ffffff",
                   borderRadius: "50%",
-                  animation: "spin 1s linear infinite",
                 }}></div>
               ) : (
                 <svg
@@ -517,78 +436,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* グローバルスタイル */}
-      <style jsx global>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        html, body {
-          margin: 0;
-          padding: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        }
-        
-        #__next {
-          width: 100%;
-          height: 100%;
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes pulse1 {
-          0%, 80%, 100% {
-            transform: scale(0.6);
-            opacity: 0.5;
-          }
-          40% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes pulse2 {
-          0%, 80%, 100% {
-            transform: scale(0.6);
-            opacity: 0.5;
-          }
-          40% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes pulse3 {
-          0%, 80%, 100% {
-            transform: scale(0.6);
-            opacity: 0.5;
-          }
-          40% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }
