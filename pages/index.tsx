@@ -1,56 +1,101 @@
-import { useState } from 'react'
-import ChatMessage from '../components/ChatMessage'
+import { useState, useRef, useEffect } from "react";
+import Head from "next/head";
+import styles from "../styles/Home.module.css";
 
-type Message = {
-  role: 'user' | 'assistant'
-  content: string
+interface Message {
+  sender: "user" | "bot";
+  text: string;
 }
 
 export default function Home() {
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      sender: "bot",
+      text: "こんにちは！TANAKA INFO AIへようこそ。",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    const newMessages: Message[] = [...messages, { role: 'user', content: input }]
-    setMessages(newMessages)
-    setInput('')
-    setLoading(true)
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    const userMessage: Message = { sender: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
 
-    const res = await fetch('/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: newMessages }),
-    })
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input }),
+    });
 
-    const data = await res.json()
-    setMessages([...newMessages, { role: 'assistant', content: data.result }])
-    setLoading(false)
-  }
+    const data = await res.json();
+    const botMessage: Message = { sender: "bot", text: data.message };
+    setMessages((prev) => [...prev, botMessage]);
+  };
 
   return (
-    <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">東洋医学AIチャット</h1>
-      <div className="space-y-2 mb-4">
-        {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} />
-        ))}
-        {loading && <ChatMessage role="assistant" content="考え中..." />}
+    <>
+      {/* 背景動画：これを一番上に固定 */}
+      <video
+        autoPlay
+        muted
+        loop
+        id="background-video"
+        style={{
+          position: "fixed",
+          right: 0,
+          bottom: 0,
+          minWidth: "100%",
+          minHeight: "100%",
+          zIndex: -1,
+          objectFit: "cover",
+        }}
+      >
+        <source src="/space.mp4" type="video/mp4" />
+      </video>
+
+      <div className={styles.container}>
+        <Head>
+          <title>TANAKA INFO AI</title>
+        </Head>
+
+        <div className={styles.chatContainer}>
+          <h1 className={styles.title}>TANAKA INFO AI</h1>
+          <div className={styles.chatBox}>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`${styles.message} ${msg.sender === "user" ? styles.user : styles.bot}`}
+              >
+                <img
+                  src={msg.sender === "user" ? "/user-icon.png" : "/bot-icon.png"}
+                  alt={msg.sender}
+                  className={styles.icon}
+                />
+                <div className={styles.text}>{msg.text}</div>
+              </div>
+            ))}
+            <div ref={endOfMessagesRef} />
+          </div>
+          <div className={styles.inputArea}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="メッセージを入力..."
+              className={styles.input}
+            />
+            <button onClick={handleSend} className={styles.button}>
+              送信
+            </button>
+          </div>
+        </div>
       </div>
-      <form onSubmit={handleSend} className="flex gap-2">
-        <input
-          className="flex-1 p-2 border rounded"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="例：膝の痛みに効く調整は？"
-        />
-        <button className="px-4 py-2 bg-blue-600 text-white rounded" disabled={loading}>
-          送信
-        </button>
-      </form>
-    </main>
-  )
+    </>
+  );
 }
