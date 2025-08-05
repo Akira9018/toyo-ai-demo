@@ -10,7 +10,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "bot",
-      text: "！Dr. Tanakaです。ご質問がございましたら、お気軽にお聞きください。",
+      text: "Dr. Tanakaにご質問をどうぞ",
     },
   ]);
 
