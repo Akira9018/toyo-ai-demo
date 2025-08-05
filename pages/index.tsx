@@ -70,7 +70,8 @@ export default function Home() {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`${styles.message} ${msg.sender === "user" ? styles.user : styles.bot}`}
+                className={`${styles.message} ${msg.sender === "user" ? styles.userMessage : styles.botMessage}`}
+
               >
                 <img
                   src={msg.sender === "user" ? "/user-icon.png" : "/bot-icon.png"}
@@ -87,9 +88,15 @@ export default function Home() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
+                  handleSend();
+                }
+              }}
               placeholder="メッセージを入力..."
               className={styles.input}
             />
+
             <button onClick={handleSend} className={styles.button}>
               送信
             </button>

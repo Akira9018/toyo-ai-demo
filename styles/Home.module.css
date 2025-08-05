@@ -52,15 +52,41 @@
     display: flex;
     align-items: flex-start;
     margin-bottom: 1rem;
+    width: 100%;
+    /* 👈 これを追加 */
 }
 
+
 .userMessage {
-    flex-direction: row-reverse;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .botMessage {
+    justify-content: flex-start;
+    /* 左寄せ */
     flex-direction: row;
 }
+
+.text {
+    max-width: 80%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    color: #000;
+    word-wrap: break-word;
+}
+
+.userMessage .text {
+    background-color: #d1ffd1;
+    color: #000;
+}
+
+.botMessage .text {
+    background-color: #ffffff;
+    color: #000;
+}
+
+
 
 .icon {
     width: 32px;
