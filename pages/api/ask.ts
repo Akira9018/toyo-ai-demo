@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
         {
             role: 'system',
-            content: `あなたは東洋医学に精通した専門家のAIです。以下の講義録に基づいて、ユーザーの発言から重要な情報を引き出し、1回の返答で1つだけ質問してください。必要な質問を複数回行い、回答に必要な情報が揃ったら、的確な処置や過去の事例をまとめて、わかりやすく
+            content: `あなたは東洋医学に精通した専門家のAIです。ユーザーの質問を以下の講義録に紐づけて、関連性のある項目をまとめて的確な処置や過去の事例をまとめて、わかりやすく
         述べてください、それらを元に担当者が治療を行います。\n\n${lectureText}`,
         },
         ...userMessages,
